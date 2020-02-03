@@ -3,6 +3,7 @@ from flask_admin import Admin
 from flask_migrate import Migrate
 
 from .database import db
+from .views import EmployeeAdminView
 
 
 def create_app():
@@ -14,6 +15,7 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+        from . import models
         Migrate(app, db)
         # Terminal
         # flask db init
@@ -21,5 +23,6 @@ def create_app():
         # flask db upgrade
 
         admin = Admin(app, url="/")
+        admin.add_view(EmployeeAdminView(models.Employee, db.session, name="Employees", url="/employees"))
 
         return app
