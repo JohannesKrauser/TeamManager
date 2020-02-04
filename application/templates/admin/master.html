@@ -1,0 +1,10 @@
+{% extends admin_base_template %}
+
+{% block brand %}
+<a class="brand" href="/">Time Tracking</a>
+{% endblock %}
+
+{% block head_css %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}" />
+{% endblock %}

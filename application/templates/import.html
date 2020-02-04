@@ -1,0 +1,11 @@
+{% extends 'admin/model/list.html' %}
+{% import 'admin/model/layout.html' as model_layout with context %}
+{% block body %}
+    <h1>Import from file</h1>
+    <form method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ form.file }}
+        <p></p>
+        <input type="submit" value="Import">
+    </form>
+{% endblock %}

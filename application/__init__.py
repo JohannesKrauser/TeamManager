@@ -9,6 +9,7 @@ from .views import AccountsView
 from .views import EmployeesView
 from .views import ProjectsView
 from .views import TimeTracksView
+from .views import ImportView
 
 
 def create_app():
@@ -35,6 +36,7 @@ def create_app():
                 ProjectsView(models.Project, db.session, name="Projects", url="/projects", category="Projects"))
             admin.add_view(
                 AccountsView(models.Account, db.session, name="Accounts", url="/accounts", category="Projects"))
+            admin.add_view(ImportView(name="Import", url="/import", category="Time Tracks"))
             admin.add_view(
                 TimeTracksView(models.TimeTrack, db.session, name="List", url="/time_tracks", category="Time Tracks"))
 
