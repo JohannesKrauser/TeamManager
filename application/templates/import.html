@@ -1,11 +1,38 @@
 {% extends 'admin/model/list.html' %}
 {% import 'admin/model/layout.html' as model_layout with context %}
 {% block body %}
+    {% if not time_tracks is defined %}
     <h1>Import from file</h1>
     <form method="post" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        {{ form.file }}
+        {{ parse_form.hidden_tag() }}
+        {{ parse_form.file }}
         <p></p>
         <input type="submit" value="Import">
     </form>
+    {% else %}
+        {% if time_tracks %}
+            <h1>Time Tracks</h1>
+            {% set current_account = namespace(id=0) %}
+            {% for time_track in time_tracks %}
+                {% if (current_account.id != time_track.account_id) %}
+                    {% if not loop.first %}
+                        </table>
+                    {% endif %}
+                    <table class="table table-striped table-bordered table-hover model-list cf">
+                    <thead>
+                        <tr>
+                            <th>{{ time_track.account.project }} ({{ time_track.account }})</th>
+                            <th>Hours</th>
+                        </tr>
+                    </thead>
+                    {% set current_account.id = time_track.account_id %}
+                {% endif %}
+                <tr>
+                    <td>{{ time_track.employee }}</td>
+                    <td>{{ time_track.hours }}</td>
+                </tr>
+            {% endfor %}
+            </table>
+        {% endif %}
+    {% endif %}
 {% endblock %}

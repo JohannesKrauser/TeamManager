@@ -12,6 +12,7 @@ from flask_wtf.file import FileAllowed
 from flask_wtf.file import FileField
 from flask_wtf.file import FileRequired
 from werkzeug import secure_filename
+from .database import db
 
 
 def gid_formatter(view, context, model, name):
@@ -66,29 +67,29 @@ class TimeTracksView(ModelView):
     edit_modal = True
 
 
-class ImportFileForm(FlaskForm):
+class ParseFileForm(FlaskForm):
     file = FileField(validators=[FileRequired(), FileAllowed(["csv"])])
 
 
 class ImportView(BaseView):
     @expose("/", methods=["GET", "POST"])
     def index(self):
-        form = ImportFileForm()
+        parse_form = ParseFileForm()
 
-        if form.validate_on_submit():
-            filename = secure_filename(form.file.data.filename)
+        if parse_form.validate_on_submit():
+            filename = secure_filename(parse_form.file.data.filename)
             full_path = path.join(tempfile.gettempdir(), filename)
-            form.file.data.save(full_path)
+            parse_form.file.data.save(full_path)
 
-            parse_csv(full_path)
+            time_tracks = parse_csv(full_path)
 
-            return self.render("import.html", form=form)
+            return self.render("import.html", parse_form=parse_form, time_tracks=sorted(time_tracks, key=lambda time_track: time_track.account_id))
 
-        return self.render("import.html", form=form)
+        return self.render("import.html", parse_form=parse_form)
 
 
 def parse_csv(file):
-    output = {}
+    output = []
 
     with open(file) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=";")
@@ -104,44 +105,18 @@ def parse_csv(file):
             account_name = row[7]
             hours = float(row[13])
 
-            if account_name == "SUM":
-                # Sick leave
-                hours = float(row[14])
-                if hours > 0:
-                    account_name = "SICK LEAVE"
-                    create_time_track(account_name, employee_local_id, hours)
-
-                # Education leave
-                hours = float(row[15])
-                if hours > 0:
-                    account_name = "EDUCATION LEAVE"
-                    create_time_track(account_name, employee_local_id, hours)
-
-                # Holiday abroad
-                hours = float(row[16])
-                if hours > 0:
-                    account_name = "HOLIDAY ABROAD"
-                    create_time_track(account_name, employee_local_id, hours)
-
-                # Parental leave
-                hours = float(row[17])
-                if hours > 0:
-                    account_name = "PARENTAL LEAVE"
-                    create_time_track(account_name, employee_local_id, hours)
-
-                # Vacation leave
-                hours = float(row[18])
-                if hours > 0:
-                    account_name = "VACATION LEAVE"
-                    create_time_track(account_name, employee_local_id, hours)
+            if account_name == environ.get("AZM_COMMON"):
+                for index in range(14, 19):
+                    hours = float(row[index])
+                    if hours > 0:
+                        create_time_track(output, environ.get(f"AZM_{index}"), employee_local_id, hours)
             else:
-                create_time_track(account_name, employee_local_id, hours)
+                create_time_track(output, account_name, employee_local_id, hours)
 
     return output
 
 
-def create_time_track(account_name, employee_local_id, hours):
-    from .database import db
+def create_time_track(output, account_name, employee_local_id, hours):
     from sqlalchemy.orm.exc import NoResultFound
     from .models import Employee
     from .models import Account
@@ -157,3 +132,8 @@ def create_time_track(account_name, employee_local_id, hours):
     time_track.account_id = account.id
     time_track.employee_id = employee.id
     time_track.hours = hours
+    time_track.year = 2020
+    time_track.month = 1
+
+    db.session.add(time_track)
+    output.append(time_track)
