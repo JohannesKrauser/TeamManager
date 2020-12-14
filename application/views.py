@@ -18,7 +18,7 @@ from .database import db
 def gid_formatter(view, context, model, name):
     field = getattr(model, name)
     url = environ.get("SOC_URL")
-    return Markup(f"<a href=\"#\" onClick=\"SCD=window.open('{url}{field}')\">{field}</a>")
+    return Markup(f"<a href=\"#\" onClick=\"SOC=window.open('{url}{field}')\">{field}</a>")
 
 
 class EmployeesView(ModelView):
