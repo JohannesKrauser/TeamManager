@@ -11,7 +11,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
 from flask_wtf.file import FileField
 from flask_wtf.file import FileRequired
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from .database import db
 
 
