@@ -28,8 +28,8 @@
                     {% set current_account.id = time_track.account_id %}
                 {% endif %}
                 <tr>
-                    <td>{{ time_track.employee }}</td>
-                    <td>{{ time_track.hours }}</td>
+                    <td width="90%">{{ time_track.employee }}</td>
+                    <td style="text-align:right">{{ time_track.hours }}</td>
                 </tr>
             {% endfor %}
             </table>
